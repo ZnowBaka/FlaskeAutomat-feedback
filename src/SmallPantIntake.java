@@ -1,12 +1,14 @@
 import java.util.ArrayList;
 
-public class PantIntake {
+public class SmallPantIntake {
     private ArrayList<Bottle> bottles = new ArrayList<>();
 
     public void addBottle(Bottle bottle) {
         if(bottles.size() < 10) {
             bottles.add(bottle);
-            System.out.println(bottles.getLast().getSize() + " There is: " + bottles.size() + " in the Main intake");
+            System.out.println(bottles.size());
+            System.out.println("Small intake received: " + bottles.getLast().getSize() + " bottle");
+            System.out.println("There is: " + bottles.size() + " in Small intake");
         }
     }
 
@@ -22,7 +24,6 @@ public class PantIntake {
         return bottles.size();
     }
 
-    public ArrayList<Bottle> getBottles() {
-        return bottles;
-    }
+
+
 }

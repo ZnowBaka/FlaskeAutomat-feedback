@@ -1,33 +1,49 @@
 public class BottleProducer implements Runnable {
     private int rand;
-    private PantIntake pantIntake = new PantIntake();
+    private PantIntake pantIntake;
+
+    public BottleProducer(PantIntake pantIntake) {
+        this.pantIntake = pantIntake;
+    }
+
     @Override
     public void run() {
-        PantIntake pantIntake = new PantIntake();
-        while (true) {
-            rand = (int)(Math.random()*2 + 1);
-            System.out.println(rand);
-            if (rand == 1) {
-                Bottle bottle = new Bottle("Big");
-                System.out.println("Bottle " + bottle.getSize());
-                pantIntake.add(bottle);
-                try {
-                    Thread.sleep(2000);
-                } catch (InterruptedException e) {
+        synchronized (pantIntake) {
+            while (true) {
+                if (pantIntake.getSize() < 10) {
+
+                    rand = (int) (Math.random() * 2 + 1);
+                    System.out.println(rand);
+
+                    if (rand == 1) {
+                        Bottle bottle = new Bottle("Big");
+                        System.out.println("Bottle size: " + bottle.getSize() + " was inserted into the machine");
+                        pantIntake.addBottle(bottle);
+                        try {
+                            pantIntake.notify();
+                            Thread.sleep(1000);
+                        } catch (InterruptedException e) {
+                        }
+                    } else if (rand == 2) {
+                        Bottle bottle = new Bottle("Small");
+                        System.out.println("Bottle size: " + bottle.getSize() + " was inserted into the machine");
+                        pantIntake.addBottle(bottle);
+                        try {
+                            pantIntake.notify();
+                            Thread.sleep(1000);
+                        } catch (InterruptedException e) {
+                        }
+                    }
+                } else {
+                    try {
+                        pantIntake.notify();
+                        pantIntake.wait();
+                    } catch (InterruptedException e) {
+                    }
                 }
-            } else if (rand == 2) {
-                Bottle bottle = new Bottle("Small");
-                System.out.println("Bottle " + bottle.getSize());
-                pantIntake.add(bottle);
-                try {
-                    Thread.sleep(2000);
-                } catch (InterruptedException e) {
-                }
-            }
-            try {
-                Thread.sleep(2000);
-            } catch (InterruptedException e) {
             }
         }
     }
-}
+
+
+}// BottleProducer END
