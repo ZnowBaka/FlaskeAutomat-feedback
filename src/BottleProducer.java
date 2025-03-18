@@ -30,12 +30,13 @@ public class BottleProducer implements Runnable {
                     // Producer en flaske
                     rand = (int) (Math.random() * 2 + 1);
                     Bottle bottle = new Bottle(rand == 1 ? "Big" : "Small");
+                    System.out.println("A bottle was inserted into the machine");
                     pantIntake.addBottle(bottle);
-                    System.out.println("Bottle size: " + bottle.getSize() + " was inserted into the machine");
+                    System.out.println();
                     pantIntake.notifyAll(); // Bruger notifyAll(), så både PantSplitter og forbrugerne vækkes, når en ny flaske tilføjes.
 
                     try {
-                        Thread.sleep(1000); // Simuler produktionstid
+                        Thread.sleep(500); // Simuler produktionstid
                     } catch (InterruptedException e) {
                         Thread.currentThread().interrupt();
                     }

@@ -8,7 +8,7 @@ public class SmallPantIntake {
             bottles.add(bottle);
             System.out.println(bottles.size());
             System.out.println("Small intake received: " + bottles.getLast().getSize() + " bottle");
-            System.out.println("There is: " + bottles.size() + " in Small intake");
+            System.out.println("Current capacity: " + bottles.size() + " bottles");
         }
     }
 

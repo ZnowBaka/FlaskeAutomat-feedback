@@ -29,6 +29,13 @@ public class PantSplitter implements Runnable {
                 }
 
                 for (int i = 0; i < 10; i++) {
+
+                    try {
+                        Thread.sleep(500); // Simuler sorteringstid
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    }
+
                     Bottle bottleToSort = producerPantIntake.getBottle();
                     System.out.println(bottleToSort.getSize() + " bottle added to splitter");
 

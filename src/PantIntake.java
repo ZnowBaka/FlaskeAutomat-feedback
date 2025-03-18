@@ -6,7 +6,7 @@ public class PantIntake {
     public void addBottle(Bottle bottle) {
         if(bottles.size() < 10) {
             bottles.add(bottle);
-            System.out.println(bottles.getLast().getSize() + " There is: " + bottles.size() + " in the Main intake");
+            System.out.println("There is: " + bottles.size() + " in the Main intake");
         }
     }
 
