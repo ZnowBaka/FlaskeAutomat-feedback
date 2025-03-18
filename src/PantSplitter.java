@@ -1,76 +1,56 @@
 public class PantSplitter implements Runnable {
-    final PantIntake ProducerPantIntake;
-    final BigPantIntake BigPantIntake;
+    final PantIntake producerPantIntake;
+    final BigPantIntake bigPantIntake;
     final SmallPantIntake SmallPantIntake;
 
     public PantSplitter(PantIntake producerPantIntake, BigPantIntake bigPantIntake, SmallPantIntake smallPantIntake) {
-        this.ProducerPantIntake = producerPantIntake;
-        this.BigPantIntake = bigPantIntake;
+        this.producerPantIntake = producerPantIntake;
+        this.bigPantIntake = bigPantIntake;
         this.SmallPantIntake = smallPantIntake;
     }
 
+    /*
+    Farlig synkroniserings logik!
+    PantSplitter lavede farlige unlock/re-lock operationer på Big- og SmallPantIntake inde i samme metode.
+    Dette kan føre til deadlocks, hvis en tråd venter på to låse samtidigt.
+     */
 
     @Override
     public void run() {
-        BigPantIntake bigPantIntake = BigPantIntake;
-        SmallPantIntake smallPantIntake = SmallPantIntake;
+        while (true) {
 
-        synchronized (ProducerPantIntake) {
-            while (true) {
-                if (ProducerPantIntake.getSize() == 10) {
-                    for (int i = 0; i < ProducerPantIntake.getSize(); i++) {
-                        try {
-                            Bottle bottleToSort = ProducerPantIntake.getBottle();
-                            System.out.println(bottleToSort.getSize() + " bottle added to splitter");
-
-                            if (bottleToSort.getSize().equals("Big")) {
-                                synchronized (BigPantIntake) {
-                                    if (bigPantIntake.getSize() < 10) {
-                                        System.out.println(bottleToSort.getSize() + " bottle sent to Big-Intake");
-                                        BigPantIntake.addBottle(bottleToSort);
-                                        BigPantIntake.notify();
-                                        ProducerPantIntake.notify();
-                                        Thread.sleep(1000);
-                                    } else {
-                                        BigPantIntake.notify();
-                                        BigPantIntake.wait();
-                                    }
-                                }
-                            } else if (bottleToSort.getSize().equals("Small")) {
-                                synchronized (SmallPantIntake) {
-                                    if (smallPantIntake.getSize() < 10) {
-                                        System.out.println(bottleToSort.getSize() + " bottle sent to Small-Intake");
-                                        SmallPantIntake.addBottle(bottleToSort);
-                                        SmallPantIntake.notify();
-                                        Thread.sleep(1000);
-                                        ProducerPantIntake.notify();
-                                    } else {
-                                        SmallPantIntake.notify();
-                                        SmallPantIntake.wait();
-                                    }
-                                }
-                            }
-
-                            Thread.sleep(1000);
-                        } catch (InterruptedException e) {
-
-                        }
-                    }
+            synchronized (producerPantIntake) {
+                while (producerPantIntake.getSize() < 10) { // Korrekt ventelogik: Denne løsning frem for "if statements", sikre at tråden ikke vågner unødvendigt.
                     try {
-                        ProducerPantIntake.notify();
-                        ProducerPantIntake.wait();
+                        producerPantIntake.wait();
                     } catch (InterruptedException e) {
-                    }
-                } else {
-                    try {
-                        ProducerPantIntake.notify();
-                        ProducerPantIntake.wait();
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
+                        Thread.currentThread().interrupt();
                     }
                 }
 
+                for (int i = 0; i < 10; i++) {
+                    Bottle bottleToSort = producerPantIntake.getBottle();
+                    System.out.println(bottleToSort.getSize() + " bottle added to splitter");
+
+                    if (bottleToSort.getSize().equals("Big")) {
+                        synchronized (bigPantIntake) {
+                            bigPantIntake.addBottle(bottleToSort);
+                            bigPantIntake.notify();
+                        }
+
+                    } else {
+                        synchronized (SmallPantIntake) {
+                            SmallPantIntake.addBottle(bottleToSort);
+                            SmallPantIntake.notify();
+                        }
+                    }
+
+                }
+                producerPantIntake.notifyAll(); // Bruger notifyAll() i stedet for notify(), så alle ventende tråde vækkes korrekt.
             }
         }
     }
-}
+
+
+} // PantSplitter END
+

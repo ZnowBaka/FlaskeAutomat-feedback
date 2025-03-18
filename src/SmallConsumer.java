@@ -10,27 +10,28 @@ public class SmallConsumer implements Runnable {
 
     @Override
     public void run() {
-        synchronized (smallPantIntake) {
-            while (true) {
+        while (true) {
+            synchronized (smallPantIntake) {
                 try {
-                    if (smallPantIntake.getSize() == 10) {
-                        for (int i = 0; i < smallPantIntake.getSize(); i++) {
-                            smallPantIntake.getBottle();
-                            wallet.setMoney(wallet.getMoney() + 2);
-                            System.out.println("Bottle has been panted ");
-                            System.out.print("receipt is now: " + wallet.getMoney() + "\n");
-                            smallPantIntake.notify();
-                            Thread.sleep(2000);
-                        }
-                    } else {
-                        smallPantIntake.notify();
+                    while (smallPantIntake.getSize() < 10) { // Korrekt ventelogik: Denne løsning frem for "if statements", sikre at tråden ikke vågner unødvendigt.
                         smallPantIntake.wait();
                     }
+
+                    for (int i = 0; i < 10; i++) {
+                        smallPantIntake.getBottle();
+                        wallet.setMoney(wallet.getMoney() + 3);
+                        System.out.println("Bottle has been panted ");
+                        System.out.print("receipt is now: " + wallet.getMoney() + "\n");
+                    }
+
+                    smallPantIntake.notifyAll(); // Bruger notifyAll() i stedet for notify(), så alle ventende tråde vækkes korrekt.
+                    Thread.sleep(2000);
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    Thread.currentThread().interrupt();
                 }
             }
         }
-
     }
+
+
 }
